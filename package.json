@@ -1,17 +1,23 @@
 {
   "name": "garmin-fit-viewer",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "vite": "^6.0.0"
+    "@types/node": "^25.2.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vite-plugin-checker": "^0.12.0"
   },
   "dependencies": {
-    "@garmin/fitsdk": "^21.158.0"
+    "@garmin/fitsdk": "^21.158.0",
+    "chart.js": "^4.5.1",
+    "i18next": "^25.8.4"
   }
 }
