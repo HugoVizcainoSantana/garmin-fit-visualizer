@@ -11,6 +11,7 @@ import { SummaryCards } from '@/components/SummaryCards/SummaryCards';
 import { Tabs } from '@/components/Tabs/Tabs';
 import { Overview } from '@/components/Overview/Overview';
 import { RawJSON } from '@/components/RawJSON/RawJSON';
+import { MetricsCharts } from '@/components/Charts/MetricsCharts';
 
 // Import state management
 import { store, actions } from '@/state/store';
@@ -56,6 +57,17 @@ class App {
     const jsonContainer = document.querySelector('#json-panel-content') as HTMLElement;
     if (jsonContainer) {
       this.components.set('rawJSON', new RawJSON(jsonContainer));
+    }
+    
+    // Initialize MetricsCharts component (hidden by default)
+    const metricsContainer = document.querySelector('#overview-panel-content') as HTMLElement;
+    if (metricsContainer) {
+      // Add metrics charts to overview
+      const metricsCharts = document.createElement('div');
+      metricsCharts.id = 'metrics-charts-container';
+      metricsContainer.appendChild(metricsCharts);
+      
+      this.components.set('metricsCharts', new MetricsCharts(metricsCharts));
     }
   }
 
