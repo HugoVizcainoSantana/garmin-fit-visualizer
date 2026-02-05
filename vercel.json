@@ -1,0 +1,6 @@
+{
+    "$schema": "https://vercel.com/schema.json",
+    "framework": "vite",
+    "buildCommand": "bun run build",
+    "outputDirectory": "dist"
+}
