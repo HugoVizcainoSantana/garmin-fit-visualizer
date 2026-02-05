@@ -9,6 +9,8 @@ import { Loading } from '@/components/Loading/Loading';
 import { ErrorMessage } from '@/components/ErrorMessage/ErrorMessage';
 import { SummaryCards } from '@/components/SummaryCards/SummaryCards';
 import { Tabs } from '@/components/Tabs/Tabs';
+import { Overview } from '@/components/Overview/Overview';
+import { RawJSON } from '@/components/RawJSON/RawJSON';
 
 // Import state management
 import { store, actions } from '@/state/store';
@@ -41,6 +43,115 @@ class App {
     
     // Setup global event listeners
     this.setupGlobalEventListeners();
+  }
+
+  private initializeTabComponents(): void {
+    // Initialize Overview component
+    const overviewContainer = document.querySelector('#overview-panel-content') as HTMLElement;
+    if (overviewContainer) {
+      this.components.set('overview', new Overview(overviewContainer));
+    }
+    
+    // Initialize RawJSON component
+    const jsonContainer = document.querySelector('#json-panel-content') as HTMLElement;
+    if (jsonContainer) {
+      this.components.set('rawJSON', new RawJSON(jsonContainer));
+    }
+  }
+
+  // Setup global event listeners
+  private setupGlobalEventListeners(): void {
+    // Listen for tab changes to trigger component rendering
+    this.container.addEventListener('tabChanged', (e: any) => {
+      const { tabId } = e.detail;
+      
+      // Handle different tab activations
+      switch (tabId) {
+        case 'hrv-analysis':
+          // Import and render HRV charts
+          import('@/components/Charts/HRVCharts').then(({ HRVCharts }) => {
+            const container = document.querySelector('#hrv-panel-content') as HTMLElement;
+            if (container && !container.hasAttribute('data-initialized')) {
+              new HRVCharts(container);
+              container.setAttribute('data-initialized', 'true');
+            }
+          });
+          break;
+          
+        case 'overview':
+          // Overview component is already initialized and reactive
+          break;
+          
+        case 'raw-json':
+          // RawJSON component is already initialized and reactive
+          break;
+          
+        default:
+          // Handle data type tabs
+          this.handleDataTypeTab(tabId);
+          break;
+      }
+    });
+  }
+  
+  private handleDataTypeTab(tabId: string): void {
+    const container = document.querySelector(`#${tabId}-panel-content`) as HTMLElement;
+    if (!container || container.hasAttribute('data-initialized')) {
+      return;
+    }
+    
+    // Get data from store
+    const state = store.getState();
+    if (!state.currentData) {
+      container.innerHTML = `<p class="no-data">${i18next.t('noDataAvailable')}</p>`;
+      return;
+    }
+    
+    // Get the data for this type
+    const data = (state.currentData.raw as any)[tabId];
+    if (!data || data.length === 0) {
+      container.innerHTML = `<p class="no-data">${i18next.t('noDataAvailable')}</p>`;
+      return;
+    }
+    
+    // Import and create data table
+    import('@/components/DataTable/DataTable').then(({ DataTable }) => {
+      const dataTable = new DataTable(container);
+      dataTable.setData(data, this.getDataTypeLabel(tabId));
+      container.setAttribute('data-initialized', 'true');
+      
+      // Store component for cleanup
+      this.components.set(`${tabId}-table`, dataTable);
+    });
+  }
+  
+  private getDataTypeLabel(type: string): string {
+    const labelMap: { [key: string]: string } = {
+      sessions: i18next.t('sessions'),
+      laps: i18next.t('laps'),
+      records: i18next.t('records'),
+      events: i18next.t('events'),
+      hrv: i18next.t('hrvDataTab'),
+      hrvValue: i18next.t('hrvValues'),
+      hrvStatusSummary: i18next.t('hrvStatus'),
+      respirationRate: i18next.t('respirationRate'),
+      stressLevel: i18next.t('stressLevel'),
+      deviceInfo: i18next.t('deviceInfo'),
+      userProfile: i18next.t('userProfile'),
+      trainingZones: i18next.t('trainingZones'),
+      workout: i18next.t('workout'),
+      workoutStep: i18next.t('workoutSteps'),
+      lengths: i18next.t('lengths'),
+      splits: i18next.t('splits'),
+      splitSummary: i18next.t('splitSummary'),
+      monitoring: i18next.t('monitoring'),
+      gpsMetadata: i18next.t('gpsMetadata'),
+      climbPro: i18next.t('climbPro'),
+      set: i18next.t('sets'),
+      jump: i18next.t('jumps')
+    };
+    
+    return labelMap[type] || type;
   }
 
   private async initI18n(): Promise<void> {
@@ -101,6 +212,9 @@ class App {
     this.components.set('tabs', new Tabs(
       this.container.querySelector('#tabs-container') as HTMLElement
     ));
+    
+    // Initialize tab content components
+    this.initializeTabComponents();
   }
 
   private subscribeToState(): void {
@@ -192,24 +306,7 @@ class App {
     return sportLabels[sport] || sport;
   }
 
-  private setupGlobalEventListeners(): void {
-    // Listen for tab changes to trigger chart rendering
-    this.container.addEventListener('tabChanged', (e: any) => {
-      const { tabId } = e.detail;
-      
-      // Trigger chart rendering for HRV tab
-      if (tabId === 'hrv-analysis') {
-        // Import and render HRV charts
-        import('@/components/Charts/HRVCharts').then(({ HRVCharts }) => {
-          const container = document.querySelector('#hrv-panel-content') as HTMLElement;
-          if (container && !container.hasAttribute('data-initialized')) {
-            new HRVCharts(container);
-            container.setAttribute('data-initialized', 'true');
-          }
-        });
-      }
-    });
-  }
+  
 
   private resetApp(): void {
     // Reset state
