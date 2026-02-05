@@ -2,3 +2,4 @@ node_modules
 dist
 *.local
 .DS_Store
+example_garmin_dump/
